@@ -26,7 +26,9 @@ def route_after_retry(state: AgentState) -> str:
 
     TODO(student): implement bounded retry and dead-letter routing.
     """
-    if int(state.get("attempt", 0)) >= int(state.get("max_attempts", 3)):
+    # `attempt` now counts tool executions, so allow one extra retry when
+    # max_attempts is the retry budget configured per scenario.
+    if int(state.get("attempt", 0)) > int(state.get("max_attempts", 3)):
         return "dead_letter"
     return "tool"
 

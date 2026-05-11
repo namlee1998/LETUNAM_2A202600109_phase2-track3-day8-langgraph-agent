@@ -34,7 +34,11 @@ def run_scenarios(
         state = initial_state(scenario)
         run_config = {"configurable": {"thread_id": state["thread_id"]}}
         final_state = graph.invoke(state, config=run_config)
-        metrics.append(metric_from_state(final_state, scenario.expected_route.value, scenario.requires_approval))
+        metrics.append(
+            metric_from_state(
+                final_state, scenario.expected_route.value, scenario.requires_approval
+            )
+        )
     report = summarize_metrics(metrics)
     write_metrics(report, output)
     if cfg.get("report_path"):
@@ -50,6 +54,34 @@ def validate_metrics(metrics: Annotated[Path, typer.Option("--metrics")]) -> Non
     if report.total_scenarios < 6:
         raise typer.BadParameter("Expected at least 6 scenarios")
     typer.echo(f"Metrics valid. success_rate={report.success_rate:.2%}")
+
+
+@app.command("hitl-demo")
+def hitl_demo() -> None:
+    """Launch Streamlit HITL demo for interactive interruption and recovery.
+
+    Features:
+    - Run agent until approval decision (interrupt)
+    - Accept/Reject approvals
+    - Simulate network failures
+    - Recover and resume with same thread_id
+    - View execution history and state
+
+    Requires: pip install streamlit
+    """
+    try:
+        import subprocess
+        import sys
+
+        subprocess.run(
+            [sys.executable, "-m", "streamlit", "run",
+             str(Path(__file__).parent / "hitl_app.py")],
+            check=False,
+        )
+    except ImportError as exc:
+        raise typer.BadParameter(
+            "Streamlit not installed. Run: pip install streamlit"
+        ) from exc
 
 
 if __name__ == "__main__":

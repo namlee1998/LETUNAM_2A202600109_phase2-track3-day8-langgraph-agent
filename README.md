@@ -161,10 +161,36 @@ make test
 Pick one or more:
 - **Parallel fan-out**: Use `Send()` to run two tools concurrently, merge results via `add` reducer
 - **Real HITL**: Set `LANGGRAPH_INTERRUPT=true`, use `interrupt()` in approval_node
-- **Streamlit UI**: Build approval/reject interface with interrupt/resume
+- **Streamlit HITL UI** ⭐ (Ready to use!): Interactive dashboard with approval/reject and crash recovery
 - **Time travel**: Use `get_state_history()` to replay from earlier checkpoint
 - **Crash recovery**: Show SQLite checkpoint survives process kill + restart
 - **Graph diagram**: Export Mermaid diagram via `graph.get_graph().draw_mermaid()`
+
+#### 🎯 HITL + Crash Recovery Demo (Recommended for 90+)
+
+This project includes a **ready-to-use Streamlit HITL demo** for approval workflows with interruption and recovery:
+
+```bash
+# Install HITL dependencies
+pip install -e '.[hitl,sqlite]'
+
+# Launch interactive demo
+agent-lab hitl-demo
+```
+
+**Features:**
+✅ Interruption at approval decisions (simulating HITL gates)  
+✅ Network failure simulation and recovery  
+✅ SQLite-based persistence with thread_id tracking  
+✅ Full execution history and state inspection  
+
+**Workflow:**
+1. Select scenario → Click "Run Until Approval" → Execution pauses
+2. Click "Simulate Network Failure" → State saved to checkpoint
+3. Click "Recover & Resume" with same thread_id → Continues execution
+4. Make approval decision (Accept/Reject/Edit)
+
+**See also:** [docs/HITL_GUIDE.md](docs/HITL_GUIDE.md) for detailed walkthrough and troubleshooting.
 
 ---
 
@@ -173,11 +199,13 @@ Pick one or more:
 | Command | What it does |
 |---|---|
 | `make install` | Install project + dev dependencies |
+| `make install-hitl` | Install project + dev + HITL + SQLite checkpoint support |
 | `make test` | Run pytest |
 | `make lint` | Run ruff linter |
 | `make typecheck` | Run mypy type checker |
 | `make run-scenarios` | Execute all scenarios → `outputs/metrics.json` |
 | `make grade-local` | Validate metrics.json schema |
+| `make hitl-demo` | Launch Streamlit HITL interactive demo |
 | `make clean` | Remove caches and generated files |
 
 ---

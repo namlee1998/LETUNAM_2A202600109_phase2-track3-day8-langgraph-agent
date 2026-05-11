@@ -68,12 +68,14 @@ def tool_node(state: AgentState) -> dict:
     Simulates transient failures for error-route scenarios to demonstrate retry loops.
     TODO(student): implement idempotent tool execution and structured tool results.
     """
-    attempt = int(state.get("attempt", 0))
+    attempt = int(state.get("attempt", 0)) + 1
+    sid = state.get("scenario_id", "unknown")
     if state.get("route") == Route.ERROR.value and attempt < 2:
-        result = f"ERROR: transient failure attempt={attempt} scenario={state.get('scenario_id', 'unknown')}"
+        result = f"ERROR: transient failure attempt={attempt} scenario={sid}"
     else:
-        result = f"mock-tool-result for scenario={state.get('scenario_id', 'unknown')}"
+        result = f"mock-tool-result for scenario={sid}"
     return {
+        "attempt": attempt,
         "tool_results": [result],
         "events": [make_event("tool", "completed", f"tool executed attempt={attempt}")],
     }
@@ -124,10 +126,9 @@ def retry_or_fallback_node(state: AgentState) -> dict:
 
     TODO(student): implement bounded retry, exponential backoff metadata, and fallback route.
     """
-    attempt = int(state.get("attempt", 0)) + 1
+    attempt = int(state.get("attempt", 0))
     errors = [f"transient failure attempt={attempt}"]
     return {
-        "attempt": attempt,
         "errors": errors,
         "events": [make_event("retry", "completed", "retry attempt recorded", attempt=attempt)],
     }
@@ -158,7 +159,9 @@ def evaluate_node(state: AgentState) -> dict:
     if "ERROR" in latest:
         return {
             "evaluation_result": "needs_retry",
-            "events": [make_event("evaluate", "completed", "tool result indicates failure, retry needed")],
+            "events": [
+                make_event("evaluate", "completed", "tool result indicates failure, retry needed")
+            ],
         }
     return {
         "evaluation_result": "success",
@@ -172,9 +175,15 @@ def dead_letter_node(state: AgentState) -> dict:
     Third layer of error strategy: retry -> fallback -> dead letter.
     TODO(student): persist to dead-letter queue, alert on-call, or create support ticket.
     """
+    msg = "Request could not be completed after maximum retry attempts. Logged for manual review."
+    attempt = state.get("attempt", 0)
     return {
-        "final_answer": "Request could not be completed after maximum retry attempts. Logged for manual review.",
-        "events": [make_event("dead_letter", "completed", f"max retries exceeded, attempt={state.get('attempt', 0)}")],
+        "final_answer": msg,
+        "events": [
+            make_event(
+                "dead_letter", "completed", f"max retries exceeded, attempt={attempt}"
+            )
+        ],
     }
 
 
