@@ -114,7 +114,7 @@ Crash-resume was verified by running S01, killing the process, then instantiatin
 TIME TRAVEL DEMO COMPLETE ✅
 ```
 
-**Real HITL with Streamlit UI (`scripts/streamlit_hitl.py`):** Full human-in-the-loop approval interface. Demonstrates three core HITL behaviors:
+**Real HITL with Streamlit UI (`src/streamlit_hitl.py`):** Full human-in-the-loop approval interface. Demonstrates three core HITL behaviors:
 
 1. **`interrupt()` integration** — `approval_node` calls `langgraph.types.interrupt()` when `LANGGRAPH_INTERRUPT=true` (set automatically by the app). Execution pauses mid-graph and surfaces `proposed_action` + `risk_level` to the UI.
 
@@ -122,11 +122,6 @@ TIME TRAVEL DEMO COMPLETE ✅
 
 3. **Crash-resume via thread_id** — "Simulate Network Failure" demonstrates persistence: copy the `thread_id`, close the app, reopen, enter the same `thread_id` in recovery input, click "Recover & Resume" — graph resumes from the interrupted checkpoint without re-running prior nodes.
 
-To run:
-```bash
-pip install streamlit
-streamlit run scripts/streamlit_hitl.py
-```
 
 ## 8. Improvement plan
 
